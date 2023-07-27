@@ -1,0 +1,8 @@
+version: '2.3'
+
+services: 
+  mock-systemd:
+    build: ./
+    # Optionally add some default mock units
+    # environment:
+    #   MOCK_SYSTEMD_UNITS: 'balena.service'
