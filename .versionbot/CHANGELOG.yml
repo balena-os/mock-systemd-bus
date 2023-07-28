@@ -1,4 +1,20 @@
 - commits:
+    - subject: Fix initial setup of units from env var
+      hash: 923e996a21fe22f491d68c7f7d8bf6686a51fbc5
+      body: |
+        Initial units were previously setup in the start.sh script but
+        this would create a race where units could not be created fast enough
+        before the tests in the sut container ran. This moves the unit
+        creation to main.rs so the units can be made available as soon as the
+        server is setup.
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Felipe Lalanne
+  version: 0.1.1
+  title: ""
+  date: 2023-07-28T23:57:28.061Z
+- commits:
     - subject: Setup flowzone and docker-bake
       hash: 0174cc5924942ffb0b33da084bc35db48732d2e8
       body: ""
