@@ -1,5 +1,6 @@
 use log::{error, info, Level};
 use serde::{Deserialize, Serialize};
+use std::env;
 use std::fmt;
 use zbus::{dbus_interface, ConnectionBuilder, ObjectServer};
 use zvariant::{ObjectPath, Type};
@@ -9,7 +10,7 @@ use zvariant::{ObjectPath, Type};
 /// Valid values according to https://www.freedesktop.org/wiki/Software/systemd/dbus/
 /// are: active, reloading, inactive, failed, activating, deactivating
 #[derive(Deserialize, Serialize, Type, PartialEq, Debug, Clone)]
-enum SystemdUnitActiveState {
+enum UnitActiveState {
     Active,
     Reloading,
     Inactive,
@@ -18,27 +19,27 @@ enum SystemdUnitActiveState {
     Deactivating,
 }
 
-impl fmt::Display for SystemdUnitActiveState {
+impl fmt::Display for UnitActiveState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SystemdUnitActiveState::Active => write!(f, "active"),
-            SystemdUnitActiveState::Reloading => write!(f, "reloading"),
-            SystemdUnitActiveState::Inactive => write!(f, "inactive"),
-            SystemdUnitActiveState::Failed => write!(f, "failed"),
-            SystemdUnitActiveState::Activating => write!(f, "activating"),
-            SystemdUnitActiveState::Deactivating => write!(f, "deactivating"),
+            UnitActiveState::Active => write!(f, "active"),
+            UnitActiveState::Reloading => write!(f, "reloading"),
+            UnitActiveState::Inactive => write!(f, "inactive"),
+            UnitActiveState::Failed => write!(f, "failed"),
+            UnitActiveState::Activating => write!(f, "activating"),
+            UnitActiveState::Deactivating => write!(f, "deactivating"),
         }
     }
 }
 
 #[derive(Deserialize, Serialize, Type, PartialEq, Debug, Clone)]
-struct SystemdUnit {
+struct Unit {
     name: String,
-    active_state: SystemdUnitActiveState,
+    active_state: UnitActiveState,
 }
 
 #[dbus_interface(name = "org.freedesktop.systemd1.Unit")]
-impl SystemdUnit {
+impl Unit {
     #[dbus_interface(property)]
     async fn active_state(&self) -> String {
         self.active_state.to_string()
@@ -50,7 +51,7 @@ impl SystemdUnit {
     }
 }
 
-struct SystemdManager;
+struct ServiceManager;
 
 #[derive(zbus::DBusError, Debug)]
 enum Error {
@@ -61,43 +62,43 @@ enum Error {
 }
 
 #[derive(Default)]
-enum SystemState {
+enum PowerState {
     #[default]
     Ready,
     Rebooting,
     Off,
 }
 
-impl fmt::Display for SystemState {
+impl fmt::Display for PowerState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SystemState::Ready => write!(f, "ready"),
-            SystemState::Rebooting => write!(f, "rebooting"),
-            SystemState::Off => write!(f, "off"),
+            PowerState::Ready => write!(f, "ready"),
+            PowerState::Rebooting => write!(f, "rebooting"),
+            PowerState::Off => write!(f, "off"),
         }
     }
 }
 
 #[derive(Default)]
 struct LoginManager {
-    state: SystemState,
+    state: PowerState,
 }
 
 #[dbus_interface(name = "org.freedesktop.login1.Manager")]
 impl LoginManager {
     async fn reboot(&mut self, _interactive: bool) {
-        self.state = SystemState::Rebooting;
+        self.state = PowerState::Rebooting;
         info!("system is rebooting");
     }
 
     async fn power_off(&mut self, _interactive: bool) {
-        self.state = SystemState::Off;
+        self.state = PowerState::Off;
         info!("system is off");
     }
 
     /// Not a real login manager method, but useful for testing
     async fn mock_reset(&mut self) {
-        self.state = SystemState::Ready;
+        self.state = PowerState::Ready;
         info!("system is ready");
     }
 
@@ -119,7 +120,7 @@ fn unit_path(name: &str) -> Result<ObjectPath<'static>, Error> {
 }
 
 #[dbus_interface(name = "org.freedesktop.systemd1.Manager")]
-impl SystemdManager {
+impl ServiceManager {
     /// Create a fake unit. Obviously this is not part of the
     /// standard systemd API but it allows us to use the bus to
     /// create a unit for testing purposes
@@ -128,9 +129,9 @@ impl SystemdManager {
         #[zbus(object_server)] server: &ObjectServer,
         name: &str,
     ) -> Result<ObjectPath, Error> {
-        let interface = SystemdUnit {
+        let interface = Unit {
             name: name.to_string(),
-            active_state: SystemdUnitActiveState::Inactive,
+            active_state: UnitActiveState::Inactive,
         };
 
         let path = unit_path(name)?;
@@ -152,7 +153,7 @@ impl SystemdManager {
         name: &str,
     ) -> Result<bool, Error> {
         let path = unit_path(name)?;
-        let success = server.remove::<SystemdUnit, _>(path).await?;
+        let success = server.remove::<Unit, _>(path).await?;
         if success {
             info!("removed unit '{}'", name);
         }
@@ -169,7 +170,7 @@ impl SystemdManager {
 
         // Try to get the interface. This will fail if the
         // interface does not exist
-        server.interface::<_, SystemdUnit>(path.clone()).await?;
+        server.interface::<_, Unit>(path.clone()).await?;
 
         Ok(path)
     }
@@ -184,9 +185,9 @@ impl SystemdManager {
 
         // Try to get the interface. This will fail if the
         // interface does not exist
-        let interface = server.interface::<_, SystemdUnit>(path.clone()).await?;
+        let interface = server.interface::<_, Unit>(path.clone()).await?;
         let mut interface = interface.get_mut().await;
-        interface.active_state = SystemdUnitActiveState::Active;
+        interface.active_state = UnitActiveState::Active;
 
         info!("started unit '{}'", name);
 
@@ -208,9 +209,9 @@ impl SystemdManager {
 
         // Try to get the interface. This will fail if the
         // interface does not exist
-        let interface = server.interface::<_, SystemdUnit>(path.clone()).await?;
+        let interface = server.interface::<_, Unit>(path.clone()).await?;
         let mut interface = interface.get_mut().await;
-        interface.active_state = SystemdUnitActiveState::Inactive;
+        interface.active_state = UnitActiveState::Inactive;
 
         info!("stopped unit '{}'", name);
 
@@ -229,10 +230,10 @@ impl SystemdManager {
 
         // Try to get the interface. This will fail if the
         // interface does not exist
-        let interface = server.interface::<_, SystemdUnit>(path.clone()).await?;
+        let interface = server.interface::<_, Unit>(path.clone()).await?;
         let mut interface = interface.get_mut().await;
 
-        interface.active_state = SystemdUnitActiveState::Active;
+        interface.active_state = UnitActiveState::Active;
 
         info!("restarted unit '{}'", name);
 
@@ -251,13 +252,30 @@ async fn main() -> zbus::Result<()> {
         .init()
         .unwrap();
 
-    // setup the server
-    let _systemd = ConnectionBuilder::system()?
+    // setup the service manager
+    let service = ConnectionBuilder::system()?
         .name("org.freedesktop.systemd1")?
-        .serve_at("/org/freedesktop/systemd1", SystemdManager)?
+        .serve_at("/org/freedesktop/systemd1", ServiceManager)?
         .build()
         .await?;
 
+    // Add default units from command line arguments
+    // if any. We need to do this so they are available as soon
+    // as tests need it
+    let args: Vec<String> = env::args().collect();
+    for arg in args.iter().skip(1) {
+        service
+            .call_method(
+                Some("org.freedesktop.systemd1"),
+                "/org/freedesktop/systemd1",
+                Some("org.freedesktop.systemd1.Manager"),
+                "MockAddUnit",
+                &(arg,),
+            )
+            .await?;
+    }
+
+    // setup login manager
     let _login = ConnectionBuilder::system()?
         .name("org.freedesktop.login1")?
         .serve_at("/org/freedesktop/login1", LoginManager::default())?
