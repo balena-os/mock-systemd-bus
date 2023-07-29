@@ -1,4 +1,15 @@
 - commits:
+    - subject: Fix README example env var
+      hash: 4e626c930e1b84a9a772569e18767badc041dbca
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Felipe Lalanne
+  version: 0.1.2
+  title: ""
+  date: 2023-07-29T04:10:16.198Z
+- commits:
     - subject: Fix initial setup of units from env var
       hash: 923e996a21fe22f491d68c7f7d8bf6686a51fbc5
       body: |
