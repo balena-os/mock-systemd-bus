@@ -25,8 +25,8 @@ services:
       # Set this variable with the location of your bus socket
       # DO NOT try to use your actual system bus
       DBUS_SYSTEM_BUS_ADDRESS: unix:path=/run/dbus/system_bus_socket
-      # Optionally set-up any fake units you need
-      FAKE_SYSTEMD_UNITS: openvpn.service dummy.service
+      # Optionally set-up any mock units you need
+      MOCK_SYSTEMD_UNITS: openvpn.service dummy.service
 
   # BYOB
   dbus:
