@@ -676,7 +676,6 @@ dependencies = [
  "serde",
  "stderrlog",
  "zbus",
- "zvariant",
 ]
 
 [[package]]

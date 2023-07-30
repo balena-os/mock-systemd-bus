@@ -2,8 +2,11 @@ use log::{error, info, Level};
 use serde::{Deserialize, Serialize};
 use std::env;
 use std::fmt;
-use zbus::{dbus_interface, ConnectionBuilder, ObjectServer};
-use zvariant::{ObjectPath, Type};
+use zbus::{
+    dbus_interface,
+    zvariant::{ObjectPath, Type},
+    ConnectionBuilder, ObjectServer,
+};
 
 /// The active state of a systemd unit
 ///
