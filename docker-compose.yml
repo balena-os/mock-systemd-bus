@@ -3,6 +3,18 @@ version: '2.3'
 services: 
   mock-systemd:
     build: ./
-    # Optionally add some default mock units
-    # environment:
-    #   MOCK_SYSTEMD_UNITS: 'balena.service'
+    privileged: true
+    volumes:
+      - dbus:/shared/dbus
+    environment:
+      DBUS_SYSTEM_BUS_ADDRESS: unix:path=/shared/dbus/system_bus_socket
+      # Optionally add some default mock units
+      # environment:
+      #   MOCK_SYSTEMD_UNITS: 'balena.service'
+
+volumes:
+  dbus:
+    # Use tmpfs to avoid files remaining between runs
+    driver_opts:
+      type: tmpfs
+      device: tmpfs

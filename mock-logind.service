@@ -1,0 +1,13 @@
+[Unit]
+Description=mock-logind
+
+[Service]
+EnvironmentFile=/etc/docker.env
+ExecStart=/usr/bin/mock-logind
+StandardOutput=inherit
+StandardError=inherit
+TTYPath=/dev/console
+Restart=on-failure
+
+[Install]
+WantedBy=basic.target

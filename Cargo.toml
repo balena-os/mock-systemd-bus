@@ -1,5 +1,5 @@
 [package]
-name = "mock-systemd-bus"
+name = "mock-logind"
 version = "0.1.0"
 edition = "2021"
 description = "Systemd D-Bus API mock in a block"

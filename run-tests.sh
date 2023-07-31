@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -76,8 +76,6 @@ login_prop() {
 }
 
 cleanup() {
-	systemd_method MockDelUnit string:dummy.service >/dev/null
-	{ set +x; } 2>/dev/null
 	login_method MockReset >/dev/null
 }
 
@@ -100,9 +98,10 @@ set_abort_timer "$timeout" $$ &
 timer_pid=$!
 
 dbus_healthy() {
-	# Test to see if the service is running
-	login_prop MockState
-	{ set +x; } 2>/dev/null
+	dbus-send --system --print-reply \
+		--dest=org.freedesktop.login1 \
+		/org/freedesktop/login1 \
+		org.freedesktop.DBus.Properties.Get string:org.freedesktop.login1.Manager string:MockState
 }
 
 # Wait for dbus
@@ -119,16 +118,15 @@ trap 'cleanup' EXIT
 # Start tracing here
 set -x
 
-expect is_equal "$(systemd_method MockAddUnit string:dummy.service)" 'object path "/org/freedesktop/systemd1/unit/dummy_service"'
-expect is_equal "$(systemd_method GetUnit string:dummy.service)" 'object path "/org/freedesktop/systemd1/unit/dummy_service"'
-expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_service ActiveState)" 'variant       string "inactive"'
-expect is_equal "$(systemd_method StartUnit string:dummy.service string:fail)" 'object path "/org/freedesktop/systemd1/job/1"'
-expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_service ActiveState)" 'variant       string "active"'
-expect is_equal "$(systemd_method StopUnit string:dummy.service string:fail)" 'object path "/org/freedesktop/systemd1/job/1"'
-expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_service ActiveState)" 'variant       string "inactive"'
-expect is_equal "$(systemd_method RestartUnit string:dummy.service string:fail)" 'object path "/org/freedesktop/systemd1/job/1"'
-expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_service ActiveState)" 'variant       string "active"'
-expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_service PartOf)" 'variant       array []'
+expect is_equal "$(systemd_method GetUnit string:dummy.service)" 'object path "/org/freedesktop/systemd1/unit/dummy_2eservice"'
+expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_2eservice ActiveState)" 'variant       string "active"'
+expect systemd_method StopUnit string:dummy.service string:fail
+expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_2eservice ActiveState)" 'variant       string "inactive"'
+expect systemd_method StartUnit string:dummy.service string:fail
+expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_2eservice ActiveState)" 'variant       string "active"'
+expect systemd_method RestartUnit string:dummy.service string:fail
+expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_2eservice ActiveState)" 'variant       string "active"'
+expect is_equal "$(systemd_unit_prop /org/freedesktop/systemd1/unit/dummy_2eservice PartOf)" 'variant       array []'
 expect is_equal "$(login_prop MockState)" 'variant       string "ready"'
 expect is_equal "$(login_method PowerOff boolean:false)" ''
 expect is_equal "$(login_prop MockState)" 'variant       string "off"'
