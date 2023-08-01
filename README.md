@@ -18,10 +18,13 @@ services:
   # The service setup
   mock-systemd:
     image: ghcr.io/balena-os/mock-systemd-bus
+    # Necessary to run systemd in a container
+    privileged: true
     volumes:
       - dbus:/shared/dbus
     environment:
       # Set this variable with the location of your shared bus socket
+      # NOTE: do not use /run/dbus as this path is overwritten by systemd
       DBUS_SYSTEM_BUS_ADDRESS: unix:path=/shared/dbus/system_bus_socket
       # Optionally set-up any mock units you need. Service files for these
       # Will be created on service start
