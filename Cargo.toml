@@ -1,5 +1,5 @@
 [package]
-name = "mock-systemd-bus"
+name = "mock-logind"
 version = "0.1.0"
 edition = "2021"
 description = "Systemd D-Bus API mock in a block"
@@ -15,7 +15,6 @@ log = "0.4.19"
 serde = "1.0.175"
 stderrlog = "0.5.4"
 zbus = "3.14.1"
-zvariant = "3.15.0"
 
 [profile.release]
 opt-level = "z"

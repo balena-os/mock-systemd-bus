@@ -6,33 +6,12 @@ services:
       context: ./
       target: testing
     depends_on:
-       - dbus
        - mock-systemd
     volumes:
-      - dbus:/run/dbus
+      - dbus:/shared/dbus
     environment:
-      DBUS_SYSTEM_BUS_ADDRESS: unix:path=/run/dbus/system_bus_socket
+      DBUS_SYSTEM_BUS_ADDRESS: unix:path=/shared/dbus/system_bus_socket
 
   mock-systemd:
-    depends_on:
-       - dbus
-    volumes:
-      - dbus:/run/dbus
     environment:
-      DBUS_SYSTEM_BUS_ADDRESS: unix:path=/run/dbus/system_bus_socket
-      MOCK_SYSTEMD_UNITS: balena.service
-
-  dbus:
-      image: balenablocks/dbus
-      environment:
-        DBUS_CONFIG: session.conf
-        DBUS_ADDRESS: unix:path=/run/dbus/system_bus_socket
-      volumes:
-        - dbus:/run/dbus
-
-volumes:
-  dbus:
-    driver_opts:
-      # Use tmpfs to avoid files remaining between runs
-      type: tmpfs
-      device: tmpfs
+      MOCK_SYSTEMD_UNITS: dummy.service
