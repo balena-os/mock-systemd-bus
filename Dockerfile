@@ -20,7 +20,7 @@ COPY src ./src
 
 RUN . "$HOME/.cargo/env" && \
 	# See https://blog.rust-lang.org/inside-rust/2023/01/30/cargo-sparse-protocol.html
-	CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse cargo build --release
+	CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse cargo build --release --verbose
 
 COPY run-tests.sh /
 CMD ["/run-tests.sh"]
