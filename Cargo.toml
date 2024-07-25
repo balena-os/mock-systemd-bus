@@ -14,7 +14,7 @@ async-std = { version = "1.12.0", features = ["attributes"] }
 log = "0.4.19"
 serde = "1.0.175"
 stderrlog = "0.5.4"
-zbus = "3.14.1"
+zbus = "4.0.0"
 
 [profile.release]
 opt-level = "z"
