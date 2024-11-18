@@ -32,19 +32,14 @@ rust_triple=$(detect_arch)
 home=$(pwd)
 target="target/$rust_triple/release"
 
-# Download rustup-init
+# Download abd verify rustup-init
 mkdir -p "$target" &&
 	cd "$target" &&
 	curl -LO "https://static.rust-lang.org/rustup/dist/$rust_triple/rustup-init" &&
-	chmod 755 rustup-init
+ 	curl -LO "https://static.rust-lang.org/rustup/dist/$rust_triple/rustup-init.sha256" && 
+  	cat <rustup-init.sha256 && sha256sum --check rustup-init.sha256 && chmod 755 rustup-init
 
 cd "$home"
-curl -LO "https://static.rust-lang.org/rustup/dist/$rust_triple/rustup-init.sha256"
-
-cat rustup-init.sha256
-
-# Verify checksum
-sha256sum --check rustup-init.sha256
 
 # Run rustup-init
 exec "./$target/rustup-init" -y --default-toolchain "stable-$rust_triple"
