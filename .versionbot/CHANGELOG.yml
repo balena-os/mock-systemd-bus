@@ -1,4 +1,15 @@
 - commits:
+    - subject: Explicitly set GH_TOKEN permissions
+      hash: 95db8f040bb57f341df05ead2b5ce79d1003008e
+      body: ""
+      footer:
+        change-type: patch
+      author: Anton Belodedenko
+      nested: []
+  version: 0.2.2
+  title: ""
+  date: 2024-11-18T21:48:58.472Z
+- commits:
     - subject: Fix docker-compose example in README
       hash: 1c250e15911df388634db9cf30f8419cb60184d4
       body: ""
