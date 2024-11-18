@@ -1,5 +1,5 @@
 # Use debian:testing since we need rust v1.64
-FROM debian:testing-slim as testing
+FROM debian:testing-slim AS testing
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
