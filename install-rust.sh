@@ -42,4 +42,4 @@ mkdir -p "$target" &&
 cd "$home"
 
 # Run rustup-init
-exec "./$target/rustup-init" -y --default-toolchain "stable-$rust_triple"
+exec "./$target/rustup-init" -v -y --default-toolchain "stable-$rust_triple"
