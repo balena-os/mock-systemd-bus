@@ -51,3 +51,9 @@ jobs:
         x86_64-unknown-linux-musl
       docker_images: |
         ghcr.io/balena-os/mock-systemd-bus
+      docker_runs_on: >
+        {
+          "linux/arm64": ["self-hosted","ARM64"],
+          "linux/arm/v6": ["self-hosted","ARM64"],
+          "linux/arm/v7": ["self-hosted","ARM64"]
+        }
