@@ -1,4 +1,16 @@
 - commits:
+    - subject: Update flowzone to use ARM runners for arm images
+      hash: 6b61f625e25ef7d209ef1159ae2d0aeb3e51df35
+      body: ""
+      footer:
+        Change-type: patch
+        change-type: patch
+      author: Felipe Lalanne
+      nested: []
+  version: 0.2.3
+  title: ""
+  date: 2025-02-12T21:02:27.937Z
+- commits:
     - subject: Explicitly set GH_TOKEN permissions
       hash: 95db8f040bb57f341df05ead2b5ce79d1003008e
       body: ""
